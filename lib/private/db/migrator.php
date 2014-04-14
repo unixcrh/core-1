@@ -146,12 +146,6 @@ class Migrator {
 		$comparator = new Comparator();
 		$schemaDiff = $comparator->compare($sourceSchema, $targetSchema);
 
-		foreach ($schemaDiff->changedTables as $tableDiff) {
-			foreach ($tableDiff->changedColumns as $column) {
-				$column->oldColumnName = $this->connection->quoteIdentifier($column->oldColumnName);
-			}
-		}
-
 		return $schemaDiff;
 	}
 
