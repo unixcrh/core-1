@@ -1,28 +1,16 @@
 /**
  * Disable console output unless DEBUG mode is enabled.
  * Add
- *	 define('DEBUG', true);
+ *   define('DEBUG', true);
  * To the end of config/config.php to enable debug mode.
  * The undefined checks fix the broken ie8 console
  */
 var oc_debug;
-var oc_webroot;
 
-var oc_current_user = document.getElementsByTagName('head')[0].getAttribute('data-user');
 var oc_requesttoken = document.getElementsByTagName('head')[0].getAttribute('data-requesttoken');
 
-window.oc_config = window.oc_config || {};
+window.OCConfig = window.OCConfig || {};
 
-if (typeof oc_webroot === "undefined") {
-	oc_webroot = location.pathname;
-	var pos = oc_webroot.indexOf('/index.php/');
-	if (pos !== -1) {
-		oc_webroot = oc_webroot.substr(0, pos);
-	}
-	else {
-		oc_webroot = oc_webroot.substr(0, oc_webroot.lastIndexOf('/'));
-	}
-}
 if (oc_debug !== true || typeof console === "undefined" || typeof console.log === "undefined") {
 	if (!window.console) {
 		window.console = {};
@@ -41,7 +29,7 @@ function initL10N(app) {
 			type: 'POST',
 			success: function (jsondata) {
 				t.cache[app] = jsondata.data;
-				t.plural_form = jsondata.plural_form;
+				t.pluralForm = jsondata.pluralForm;
 			}
 		});
 
@@ -50,8 +38,8 @@ function initL10N(app) {
 			t.cache[app] = [];
 		}
 	}
-	if (typeof t.plural_function[app] == 'undefined') {
-		t.plural_function[app] = function (n) {
+	if (typeof t.pluralFunction[app] === 'undefined') {
+		t.pluralFunction[app] = function (n) {
 			var p = (n != 1) ? 1 : 0;
 			return { 'nplural' : 2, 'plural' : p };
 		};
@@ -61,13 +49,13 @@ function initL10N(app) {
 		 * https://developer.berlios.de/projects/jsgettext/
 		 * http://cvs.berlios.de/cgi-bin/viewcvs.cgi/jsgettext/jsgettext/lib/Gettext.js
 		 */
-		var pf_re = new RegExp('^(\\s*nplurals\\s*=\\s*[0-9]+\\s*;\\s*plural\\s*=\\s*(?:\\s|[-\\?\\|&=!<>+*/%:;a-zA-Z0-9_\(\)])+)', 'm');
-		if (pf_re.test(t.plural_form)) {
+		var pluralFormRegEx = new RegExp('^(\\s*nplurals\\s*=\\s*[0-9]+\\s*;\\s*plural\\s*=\\s*(?:\\s|[-\\?\\|&=!<>+*/%:;a-zA-Z0-9_\(\)])+)', 'm');
+		if (pluralFormRegEx.test(t.pluralForm)) {
 			//ex english: "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 			//pf = "nplurals=2; plural=(n != 1);";
 			//ex russian: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10< =4 && (n%100<10 or n%100>=20) ? 1 : 2)
 			//pf = "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)";
-			var pf = t.plural_form;
+			var pf = t.pluralForm;
 			if (! /;\s*$/.test(pf)) pf = pf.concat(';');
 			/* We used to use eval, but it seems IE has issues with it.
 			 * We now use "new Function", though it carries a slightly
@@ -76,9 +64,9 @@ function initL10N(app) {
 			 Gettext._locale_data[domain].head.plural_func = eval("("+code+")");
 			 */
 			var code = 'var plural; var nplurals; '+pf+' return { "nplural" : nplurals, "plural" : (plural === true ? 1 : plural ? plural : 0) };';
-			t.plural_function[app] = new Function("n", code);
+			t.pluralFunction[app] = new Function("n", code);
 		} else {
-			console.log("Syntax error in language file. Plural-Forms header is invalid ["+t.plural_forms+"]");
+			console.log("Syntax error in language file. Plural-Forms header is invalid ["+t.pluralForm+"]");
 		}
 	}
 }
@@ -115,33 +103,33 @@ t.cache = {};
 // different apps might or might not redefine the nplurals function correctly
 // this is to make sure that a "broken" app doesn't mess up with the
 // other app's plural function
-t.plural_function = {};
+t.pluralFunction = {};
 
 /**
  * translate a string
  * @param app the id of the app for which to translate the string
- * @param text_singular the string to translate for exactly one object
- * @param text_plural the string to translate for n objects
+ * @param textSingular the string to translate for exactly one object
+ * @param textPlural the string to translate for n objects
  * @param count number to determine whether to use singular or plural
  * @param vars (optional) FIXME
  * @return string
  */
-function n(app, text_singular, text_plural, count, vars) {
+function n(app, textSingular, textPlural, count, vars) {
 	initL10N(app);
-	var identifier = '_' + text_singular + '_::_' + text_plural + '_';
+	var identifier = '_' + textSingular + '_::_' + textPlural + '_';
 	if( typeof( t.cache[app][identifier] ) !== 'undefined' ){
 		var translation = t.cache[app][identifier];
 		if ($.isArray(translation)) {
-			var plural = t.plural_function[app](count);
+			var plural = t.pluralFunction[app](count);
 			return t(app, translation[plural.plural], vars, count);
 		}
 	}
 
 	if(count === 1) {
-		return t(app, text_singular, vars, count);
+		return t(app, textSingular, vars, count);
 	}
 	else{
-		return t(app, text_plural, vars, count);
+		return t(app, textPlural, vars, count);
 	}
 }
 
@@ -172,12 +160,24 @@ var OC={
 	PERMISSION_DELETE:8,
 	PERMISSION_SHARE:16,
 	PERMISSION_ALL:31,
-	webroot:oc_webroot,
+	webroot:false,
 	appswebroots:(typeof oc_appswebroots !== 'undefined') ? oc_appswebroots:false,
-	currentUser:(typeof oc_current_user!=='undefined')?oc_current_user:false,
 	coreApps:['', 'admin','log','search','settings','core','3rdparty'],
+	currentUser: document.getElementsByTagName('head')[0].getAttribute('data-user'),
+	init: function() {
+		var webRoot = location.pathname;
+		var pos = webRoot.indexOf('/index.php/');
+		if (pos !== -1) {
+			webRoot = webRoot.substr(0, pos);
+		} else {
+			webRoot = webRoot.substr(0, webRoot.lastIndexOf('/'));
+		}
+
+		OC.webroot = webRoot;
+	},
+
 	/**
-	 * get an absolute url to a file in an appen
+	 * get an absolute url to a file in an app
 	 * @param app the id of the app the file belongs to
 	 * @param file the file path relative to the app folder
 	 * @return string
@@ -187,7 +187,7 @@ var OC={
 	},
 	/**
 	 * Creates an url for remote use
-	 * @param string $service id
+	 * @param {string} $service id
 	 * @return string the url
 	 *
 	 * Returns a url to the given service.
@@ -387,13 +387,13 @@ var OC={
 		parts = queryString.replace(/\+/g, '%20').split('&');
 		for (var i = 0; i < parts.length; i++){
 			// split on first equal sign
-			var part = parts[i]
+			var part = parts[i];
 			pos = part.indexOf('=');
 			if (pos >= 0) {
 				components = [
 					part.substr(0, pos),
 					part.substr(pos + 1)
-				]
+				];
 			}
 			else {
 				// key only
@@ -462,7 +462,8 @@ var OC={
 		$.extend(props, args);
 		var settings = $('#appsettings');
 		if(settings.length == 0) {
-			throw { name: 'MissingDOMElement', message: 'There has be be an element with id "appsettings" for the popup to show.' };
+			throw { name: 'MissingDOMElement',
+				message: 'There has be be an element with id "appsettings" for the popup to show.' };
 		}
 		var popup = $('#appsettings_popup');
 		if(popup.length == 0) {
@@ -487,7 +488,8 @@ var OC={
 						} else if(typeof props.loadJS === 'string') {
 							scriptname = props.loadJS;
 						} else {
-							throw { name: 'InvalidParameter', message: 'The "loadJS" parameter must be either boolean or a string.' };
+							throw { name: 'InvalidParameter',
+								message: 'The "loadJS" parameter must be either boolean or a string.' };
 						}
 						if(props.cache) {
 							$.ajaxSetup({cache: true});
@@ -524,7 +526,7 @@ var OC={
 			$menuEl.show();
 			OC._currentMenu = $menuEl;
 			OC._currentMenuToggle = $toggle;
-			return false
+			return false;
 		});
 	},
 
@@ -619,7 +621,7 @@ OC.Notification={
 		}
 	},
 	show: function(text) {
-		if(($('#notification').filter('span.undo').length == 1) || OC.Notification.isHidden()){
+		if(($('#notification').filter('span.undo').length === 1) || OC.Notification.isHidden()){
 			$('#notification').text(text);
 			$('#notification').fadeIn().css("display","inline");
 		}else{
@@ -720,6 +722,8 @@ OC.Breadcrumb={
 	}
 };
 
+OC.init();
+
 if(typeof localStorage !=='undefined' && localStorage !== null){
 	//user and instance aware localstorage
 	OC.localStorage={
@@ -764,7 +768,9 @@ if(typeof localStorage !=='undefined' && localStorage !== null){
  * check if the browser support svg images
  */
 function SVGSupport() {
-	return SVGSupport.checkMimeType.correct && !!document.createElementNS && !!document.createElementNS('http://www.w3.org/2000/svg', "svg").createSVGRect;
+	return SVGSupport.checkMimeType.correct &&
+		!!document.createElementNS &&
+		!!document.createElementNS('http://www.w3.org/2000/svg', "svg").createSVGRect;
 }
 SVGSupport.checkMimeType=function(){
 	$.ajax({
@@ -854,8 +860,8 @@ function initCore() {
 	function initSessionHeartBeat(){
 		// interval in seconds
 		var interval = 900;
-		if (oc_config.session_lifetime) {
-			interval = Math.floor(oc_config.session_lifetime / 2);
+		if (window.OCConfig.session_lifetime) {
+			interval = Math.floor(window.OCConfig.session_lifetime / 2);
 		}
 		// minimum one minute
 		if (interval < 60) {
@@ -868,8 +874,8 @@ function initCore() {
 	}
 
 	// session heartbeat (defaults to enabled)
-	if (typeof(oc_config.session_keepalive) === 'undefined' ||
-		!!oc_config.session_keepalive) {
+	if (typeof(window.OCConfig.session_keepalive) === 'undefined' ||
+		!!window.OCConfig.session_keepalive) {
 
 		initSessionHeartBeat();
 	}
@@ -959,7 +965,7 @@ function initCore() {
 	// user menu
 	$('#settings #expand').keydown(function(event) {
 		if (event.which === 13 || event.which === 32) {
-			$('#expand').click()
+			$('#expand').click();
 		}
 	});
 	$('#settings #expand').click(function(event) {
@@ -1051,8 +1057,8 @@ $(document).ready(initCore);
 /**
  * Filter Jquery selector by attribute value
  */
-$.fn.filterAttr = function(attr_name, attr_value) {
-	return this.filter(function() { return $(this).attr(attr_name) === attr_value; });
+$.fn.filterAttr = function(attrName, attrValue) {
+	return this.filter(function() { return $(this).attr(attrName) === attrValue; });
 };
 
 function humanFileSize(size) {
@@ -1076,7 +1082,8 @@ function formatDate(date){
 	if(typeof date=='number'){
 		date=new Date(date);
 	}
-	return $.datepicker.formatDate(datepickerFormatDate, date)+' '+date.getHours()+':'+((date.getMinutes()<10)?'0':'')+date.getMinutes();
+	return $.datepicker.formatDate(
+		datepickerFormatDate, date)+' '+date.getHours()+':'+((date.getMinutes()<10)?'0':'')+date.getMinutes();
 }
 
 // taken from http://stackoverflow.com/questions/1403888/get-url-parameter-with-jquery
@@ -1088,7 +1095,8 @@ function getURLParameter(name) {
 
 /**
  * takes an absolute timestamp and return a string with a human-friendly relative date
- * @param int a Unix timestamp
+ * @param {int} timestamp - a Unix timestamp
+ * @returns {string}
  */
 function relative_modified_date(timestamp) {
 	var timediff = Math.round((new Date()).getTime() / 1000) - timestamp;
@@ -1177,7 +1185,7 @@ OC.Util = {
 
 /**
  * get a variable by name
- * @param string name
+ * @param {string} name
  */
 OC.get=function(name) {
 	var namespaces = name.split(".");
@@ -1195,8 +1203,8 @@ OC.get=function(name) {
 
 /**
  * set a variable by name
- * @param string name
- * @param mixed value
+ * @param {string} name
+ * @param value
  */
 OC.set=function(name, value) {
 	var namespaces = name.split(".");

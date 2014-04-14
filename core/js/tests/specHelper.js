@@ -55,11 +55,11 @@ window.monthNames = [
 window.firstDay = 0;
 
 // setup dummy webroots
-window.oc_webroot = location.href + '/';
+window.OCWebRoot = location.href + '/';
 window.oc_appswebroots = {
-	"files": window.oc_webroot + '/apps/files/'
+	"files": window.OCWebRoot + '/apps/files/'
 };
-window.oc_config = {
+window.OCConfig = {
 	session_lifetime: 600 * 1000,
 	session_keepalive: false
 };
@@ -85,7 +85,7 @@ window.oc_defaults = {};
 				200, {
 					"Content-Type": "application/json"
 				},
-				'{"data": [], "plural_form": "nplurals=2; plural=(n != 1);"}'
+				'{"data": [], "pluralForm": "nplurals=2; plural=(n != 1);"}'
 		]);
 
 		// make it globally available, so that other tests can define

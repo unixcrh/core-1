@@ -28,7 +28,7 @@ foreach(OC_App::getEnabledApps() as $app) {
 $array = array(
 	"oc_debug" => (defined('DEBUG') && DEBUG) ? 'true' : 'false',
 	"oc_isadmin" => OC_User::isAdminUser(OC_User::getUser()) ? 'true' : 'false',
-	"oc_webroot" => "\"".OC::$WEBROOT."\"",
+	"OCWebRoot" => "\"".OC::$WEBROOT."\"",
 	"oc_appswebroots" =>  str_replace('\\/', '/', json_encode($apps_paths)), // Ugly unescape slashes waiting for better solution
 	"datepickerFormatDate" => json_encode($l->l('jsdate', 'jsdate')),
 	"dayNames" =>  json_encode(
@@ -59,7 +59,7 @@ $array = array(
 		)
 	),
 	"firstDay" => json_encode($l->l('firstday', 'firstday')) ,
-	"oc_config" => json_encode(
+	"OCConfig" => json_encode(
 		array(
 			'session_lifetime'	=> \OCP\Config::getSystemValue('session_lifetime', ini_get('session.gc_maxlifetime')),
 			'session_keepalive'	=> \OCP\Config::getSystemValue('session_keepalive', true),

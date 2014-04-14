@@ -211,7 +211,7 @@ describe('Core base tests', function() {
 
 		beforeEach(function() {
 			clock = sinon.useFakeTimers();
-			oldConfig = window.oc_config;
+			oldConfig = window.OCConfig;
 			routeStub = sinon.stub(OC, 'generateUrl').returns('/heartbeat');
 			counter = 0;
 
@@ -224,11 +224,11 @@ describe('Core base tests', function() {
 		});
 		afterEach(function() {
 			clock.restore();
-			window.oc_config = oldConfig;
+			window.OCConfig = oldConfig;
 			routeStub.restore();
 		});
 		it('sends heartbeat half the session lifetime when heartbeat enabled', function() {
-			window.oc_config = {
+			window.OCConfig = {
 				session_keepalive: true,
 				session_lifetime: 300
 			};
@@ -254,7 +254,7 @@ describe('Core base tests', function() {
 			expect(counter).toEqual(2);
 		});
 		it('does no send heartbeat when heartbeat disabled', function() {
-			window.oc_config = {
+			window.OCConfig = {
 				session_keepalive: false,
 				session_lifetime: 300
 			};
