@@ -238,6 +238,12 @@ FileActions.register('all', 'Rename', OC.PERMISSION_UPDATE, function () {
 	FileList.rename(filename);
 });
 
+FileActions.register('all', 'Rename', OC.SHARE_MOUNT_POINT, function () {
+	return OC.imagePath('core', 'actions/rename');
+}, function (filename) {
+	FileList.rename(filename);
+});
+
 FileActions.register('dir', 'Open', OC.PERMISSION_READ, '', function (filename) {
 	var dir = $('#dir').val() || '/';
 	if (dir !== '/') {

@@ -178,6 +178,12 @@ window.FileList = {
 		if (type === 'dir') {
 			mime = mime || 'httpd/unix-directory';
 		}
+
+		var allowRename = 0;
+		if (fileData.isShareMountPoint) {
+			allowRename = OC.SHARE_MOUNT_POINT;
+		}
+
 		//containing tr
 		var tr = $('<tr></tr>').attr({
 			"data-id" : fileData.id,
@@ -187,7 +193,7 @@ window.FileList = {
 			"data-mime": mime,
 			"data-mtime": mtime,
 			"data-etag": fileData.etag,
-			"data-permissions": fileData.permissions || this.getDirectoryPermissions()
+			"data-permissions": fileData.permissions | allowRename || this.getDirectoryPermissions()
 		});
 
 		if (type === 'dir') {
@@ -282,6 +288,10 @@ window.FileList = {
 		var type = fileData.type || 'file',
 			mime = fileData.mimetype,
 			permissions = parseInt(fileData.permissions, 10) || 0;
+
+		if (fileData.isShareMountPoint) {
+			permissions = permissions | OC.SHARE_MOUNT_POINT;
+		}
 
 		if (type === 'dir') {
 			mime = mime || 'httpd/unix-directory';
