@@ -30,7 +30,7 @@ $(document).ready(function() {
 
 	function removeCallback(result) {
 		if (result.status !== 'success') {
-			OC.dialogs.alert(result.data.message, t('core', 'Error'));
+			OC.dialogs.alert(result.data.message, t('files_trashbin', 'Error'));
 		}
 
 		var files = result.data.success;
@@ -48,7 +48,7 @@ $(document).ready(function() {
 	};
 
 	if (typeof FileActions !== 'undefined') {
-		FileActions.register('all', 'Restore', OC.PERMISSION_READ, OC.imagePath('core', 'actions/history'), function(filename) {
+		FileActions.register('all', t('files_trashbin', 'Restore'), OC.PERMISSION_READ, OC.imagePath('core', 'actions/history'), function(filename) {
 			var tr = FileList.findFileEl(filename);
 			var deleteAction = tr.children("td.date").children(".action.delete");
 			deleteAction.removeClass('delete-icon').addClass('progress-icon');
@@ -121,7 +121,7 @@ $(document).ready(function() {
 			function(result) {
 				if (allFiles) {
 					if (result.status !== 'success') {
-						OC.dialogs.alert(result.data.message, t('core', 'Error'));
+						OC.dialogs.alert(result.data.message, t('files_trashbin', 'Error'));
 					}
 					FileList.hideMask();
 					// simply remove all files
@@ -170,7 +170,7 @@ $(document).ready(function() {
 				function(result) {
 					if (allFiles) {
 						if (result.status !== 'success') {
-							OC.dialogs.alert(result.data.message, t('core', 'Error'));
+							OC.dialogs.alert(result.data.message, t('files_trashbin', 'Error'));
 						}
 						FileList.hideMask();
 						// simply remove all files
